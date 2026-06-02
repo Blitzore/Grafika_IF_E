@@ -1,0 +1,92 @@
+/* Global button styles */
+button {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 0.5rem;
+}
+
+button:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Add box titles for tool sections */
+.tool-section {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: #fafafa;
+}
+
+.tool-section h3 {
+  margin-top: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Improved form inputs */
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+/* Custom color input */
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.color-picker input[type="color"] {
+  height: 2.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Hover effects for better interaction */
+.canvas-wrapper:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .controls-wrapper {
+    grid-template-columns: 1fr;
+  }
+}

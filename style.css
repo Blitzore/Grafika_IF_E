@@ -1,0 +1,559 @@
+:root {
+  --primary: #facc15;          /* Pastel Yellow (Gumroad-style) */
+  --primary-dark: #eab308;
+  --secondary: #22d3ee;        /* Neo Cyan */
+  --accent: #ff007f;           /* Neon Hot Pink */
+  --bg-light: #f3f4f6;         /* Light concrete gray */
+  --white: #ffffff;
+  --text: #000000;
+  --border: #000000;
+  --thick-border: 3px solid #000000;
+  --thin-border: 2px solid #000000;
+  --neo-shadow: 5px 5px 0px #000000;
+  --neo-shadow-hover: 7px 7px 0px #000000;
+  --neo-shadow-small: 3px 3px 0px #000000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text);
+  line-height: 1.5;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.navbar {
+  background: var(--primary);
+  color: var(--text);
+  padding: 1.25rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px solid var(--border);
+  box-shadow: 0 4px 0px #000;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-left {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px rgba(255,255,255,1);
+}
+
+.navbar-left a {
+  color: var(--text);
+  text-decoration: none;
+  border: var(--thin-border);
+  padding: 0.4rem 0.8rem;
+  background: var(--white);
+  box-shadow: var(--neo-shadow-small);
+  font-weight: 800;
+  transition: all 0.1s ease;
+}
+
+.navbar-left a:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.navbar-left a:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #000;
+}
+
+.navbar-right a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0px; /* Sharp corners */
+  border: var(--thick-border);
+  background: var(--white);
+  box-shadow: var(--neo-shadow-small);
+  font-weight: 800;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+}
+
+.navbar-right a:hover {
+  background: var(--secondary);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--neo-shadow);
+}
+
+.navbar-right a:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #000;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column; /* Bertumpuk vertikal: Kanvas di atas, Tools di bawah */
+  gap: 2.5rem;
+  padding: 2.5rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.left-section,
+.right-section {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 0px; /* Sharp corners */
+  border: var(--thick-border);
+  box-shadow: var(--neo-shadow);
+  transition: none;
+  width: 100%; /* Lebar penuh horizontal */
+}
+
+.switch-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  background: #e5e7eb;
+  padding: 6px;
+  border: var(--thin-border);
+  border-radius: 0px;
+}
+
+.switch-toggle button {
+  flex: 1;
+  padding: 0.6rem;
+  border: var(--thin-border);
+  background: var(--white);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: var(--neo-shadow-small);
+  transition: all 0.1s ease;
+}
+
+.switch-toggle button.active {
+  background: var(--primary);
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%; /* Lebar penuh horizontal agar leluasa */
+  margin: 0 auto;
+  aspect-ratio: 2 / 1; /* Rasio aspek widescreen 2:1 pas dengan resolusi 1200x600 px */
+  border-radius: 0px;
+  border: var(--thick-border);
+  box-shadow: var(--neo-shadow);
+  background: var(--white);
+  overflow: hidden;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  background-color: var(--white);
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 15px 15px;
+}
+
+/* Tata letak bertumpuk vertikal agar Canvas lebar penuh dan Visualizer di bawahnya simetris */
+.section-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+#section2d .section-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+#section3d .section-layout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.tools-card {
+  height: 100%;
+  width: 100%;
+}
+
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+/* Menyusun kartu-kartu alat gambar berjajar secara horizontal di grid multi-kolom */
+.left-content-tools,
+.right-content-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Global button styles in Neo-brutalism */
+button {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;
+  border: var(--thin-border);
+  border-radius: 0px;
+  background: var(--white);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--neo-shadow-small);
+  transition: all 0.08s cubic-bezier(0.1, 0.8, 0.25, 1);
+  gap: 0.5rem;
+}
+
+button:hover {
+  background: var(--primary);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px #000;
+}
+
+button.active {
+  background: var(--secondary) !important;
+  color: var(--text) !important;
+  transform: translate(2px, 2px);
+  box-shadow: none !important;
+}
+
+.controls-wrapper button {
+  width: 100%;
+  margin: 0.25rem 0;
+}
+
+h2,
+h3 {
+  color: var(--text);
+  margin-bottom: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: 1.6rem;
+  border-bottom: 4px solid var(--border);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+  background: var(--primary);
+  padding: 0.2rem 0.6rem;
+  border: var(--thin-border);
+  box-shadow: var(--neo-shadow-small);
+  margin-bottom: 1.5rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  margin-top: 1.2rem;
+  background: #cbd5e1;
+  padding: 0.25rem 0.5rem;
+  border: var(--thin-border);
+  display: inline-block;
+  margin-bottom: 0.8rem;
+}
+
+.input-group {
+  margin: 0.8rem 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.6rem;
+  border: var(--thin-border);
+  border-radius: 0px;
+  background-color: var(--white);
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1);
+  transition: all 0.1s ease;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  background: #fffdf0;
+  border-color: var(--accent);
+}
+
+input[type="color"] {
+  width: 100%;
+  height: 42px;
+  padding: 0.2rem;
+  border: var(--thin-border);
+  border-radius: 0px;
+  background: var(--white);
+  cursor: pointer;
+  box-shadow: var(--neo-shadow-small);
+}
+
+.direction-grid {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 0.4rem;
+  width: 130px;
+  margin: 0 auto;
+}
+
+.grid-center {
+  display: flex;
+  justify-content: center;
+}
+
+.grid-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.direction-grid button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 1.2rem;
+  border: var(--thin-border);
+}
+
+/* Live Math Visualizer kustom (Stark Retro Terminal) */
+.math-visualizer-card {
+  background: var(--white) !important;
+  border: var(--thick-border) !important;
+  box-shadow: var(--neo-shadow) !important;
+  padding: 1.25rem !important;
+}
+
+#visualizer-log {
+  height: 130px;
+  overflow-y: auto;
+  font-family: 'Courier New', Courier, monospace;
+  background: #000000 !important;
+  color: #22c55e !important; /* Stark bright matrix green */
+  padding: 12px;
+  border: var(--thin-border) !important;
+  border-radius: 0px !important;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  box-shadow: inset 3px 3px 0px rgba(255,255,255,0.1);
+}
+
+#visualizer-log b {
+  color: var(--primary) !important; /* Pastel yellow titles inside terminal */
+}
+
+#visualizer-log span {
+  color: var(--secondary) !important;
+}
+
+/* Audio toggle custom checkbox slider in Neo-brutalism */
+#audioSlider {
+  border: var(--thin-border);
+  border-radius: 0px !important;
+  background-color: #e5e7eb !important;
+  box-shadow: inset 1px 1px 0px rgba(0,0,0,0.2);
+}
+
+input:checked + #audioSlider {
+  background-color: var(--secondary) !important;
+}
+
+input:checked + #audioSlider:before {
+  transform: translateX(20px);
+}
+
+#audioSlider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #000;
+  transition: .2s;
+  border: 1px solid #000;
+}
+
+/* Reset Controls */
+.reset-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 1.25rem 0;
+}
+
+.reset-controls button {
+  background: var(--white);
+  border: var(--thin-border);
+  box-shadow: var(--neo-shadow-small);
+  color: var(--text);
+  font-weight: 900;
+}
+
+.reset-controls button:hover {
+  background: #f87171; /* Pastel Soft Red for trash/reset */
+}
+
+/* Tool sections cards */
+.tool-section {
+  border: var(--thin-border);
+  border-radius: 0px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background-color: #f9fafb;
+  box-shadow: var(--neo-shadow-small);
+}
+
+.tool-section h3 {
+  margin-top: -1.7rem;
+  margin-left: -0.5rem;
+  background: var(--white);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.9rem;
+  box-shadow: none;
+}
+
+/* Keyboard shortcuts Neo container */
+.shortcuts-info {
+  background-color: var(--white);
+  border: var(--thin-border);
+  border-radius: 0px;
+  padding: 10px;
+  box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1);
+}
+
+kbd {
+  background-color: var(--primary);
+  border: 1px solid #000;
+  border-radius: 0px;
+  box-shadow: 2px 2px 0px #000;
+  color: #000;
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  margin: 0 2px;
+}
+
+/* Member Card page (anggota.html) Neo-brutalist styles */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.member-card {
+  background: var(--white);
+  border: var(--thick-border);
+  box-shadow: var(--neo-shadow);
+  padding: 1.25rem;
+  width: 250px;
+  transition: all 0.15s ease;
+}
+
+.member-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 7px 7px 0px #000;
+}
+
+.member-card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border: var(--thin-border);
+  box-shadow: var(--neo-shadow-small);
+  margin-bottom: 1rem;
+}
+
+.member-info h3 {
+  margin: 0.5rem 0 0.25rem 0;
+  background: var(--primary);
+  border: var(--thin-border);
+  display: block;
+  text-align: center;
+}
+
+.member-info p {
+  text-align: center;
+  font-weight: 800;
+  color: #4b5563;
+}
+
+/* Loading overlay 3D */
+.loading-overlay {
+  background-color: var(--white);
+  border-radius: 0px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.loading-icon {
+  color: var(--accent);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-left: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000;
+  border: 1px solid #fff;
+}
+
+/* Utilitas */
+.hidden {
+  display: none !important;
+}

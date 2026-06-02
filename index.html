@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grafika 2D/3D | Interactive Graphics</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <script>
+      // Global error diagnostics banner for Neo-brutalism UI
+      window.displayDetailedError = function(message, source, lineno) {
+        const oldBanner = document.getElementById("js-error-banner");
+        if (oldBanner) oldBanner.remove();
+        
+        const errorDiv = document.createElement("div");
+        errorDiv.id = "js-error-banner";
+        errorDiv.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; background: #ff0055; color: #fff; padding: 15px; z-index: 10000; font-family: monospace; font-size: 14px; border-bottom: 4px solid #000; box-shadow: 0 4px 0 #000; font-weight: bold;";
+        errorDiv.innerHTML = `⚠️ [JS Error] ${message} <br> <span style="font-size: 11px; font-weight: normal;">Detail: ${source} | Line: ${lineno}</span>`;
+        document.body.appendChild(errorDiv);
+      };
+
+      window.onerror = function (message, source, lineno, colno, error) {
+        if (document.getElementById("js-error-banner")) return false;
+        
+        const srcFile = source ? source.split('/').pop() : "Unknown";
+        window.displayDetailedError(message, srcFile, `${lineno}:${colno}`);
+        return false;
+      };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Helper function to use SVG icons
+      function loadSVGIcons() {
+        // Create a hidden div to store all SVG code
+        const iconStorage = document.createElement("div");
+        iconStorage.style.display = "none";
+        document.body.appendChild(iconStorage);
+
+        // List of icon files to load
+        const icons = [
+          "arrow-up",
+          "arrow-down",
+          "arrow-left",
+          "arrow-right",
+          "reset",
+          "rotate",
+          "search",
+          "move",
+          "loading",
+          "error",
+        ];
+
+        // Load each icon
+        icons.forEach((iconName) => {
+          fetch(`icons/${iconName}.svg`)
+            .then((response) => response.text())
+            .then((svgText) => {
+              const parser = new DOMParser();
+              const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+              const svg = svgDoc.querySelector("svg");
+              svg.id = `${iconName}-icon`;
+              iconStorage.appendChild(svg);
+            })
+            .catch((err) =>
+              console.error(`Failed to load icon: ${iconName}`, err)
+            );
+        });
+      }
+
+      // Call this when document is loaded
+      document.addEventListener("DOMContentLoaded", loadSVGIcons);
+    </script>
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <div class="navbar-left">GRAFIKA 2D 3D</div>
+      <div class="navbar-right">
+        <a href="anggota.html">Anggota Kelompok</a>
+      </div>
+    </nav>
+
+    <main class="main-layout">
+      <!-- Section kiri: tombol switch -->
+      <section class="left-section">
+        <h2>Pilih Objek</h2>
+        <div class="switch-toggle">
+          <button id="btn2D">2D</button>
+          <button id="btn3D">3D</button>
+        </div>
+        <!-- Tombol reset dipindahkan ke sini -->
+        <div class="reset-controls">
+          <button id="resetBtn2D" onclick="resetTransform()">
+            <!-- <svg class="icon">
+            <use href="#reset-icon"></use>
+          </svg> -->
+            Reset
+          </button>
+          <button id="clearBtn2D" onclick="clearCanvas()">
+            <!-- <svg class="icon">
+            <use href="#trash-icon"></use>
+          </svg> -->
+            Hapus
+          </button>
+
+          <button id="resetBtn3D" onclick="resetAll()" style="display: none">
+            <!-- <svg class="icon">
+            <use href="#reset-icon"></use>
+          </svg> -->
+            Reset
+          </button>
+          <button
+            id="clearBtn3D"
+            onclick="clearCanvas3D()"
+            style="display: none"
+          >
+            <!-- <svg class="icon">
+            <use href="#trash-icon"></use>
+          </svg> -->
+            Hapus
+          </button>
+        </div>
+        <br />
+
+        <!-- Section 2D -->
+        <div id="section2d" class="section">
+          <div class="section-layout">
+            <div class="canvas-wrapper">
+              <canvas id="canvas2d" width="1200" height="600"></canvas>
+              <!-- Removed canvas controls -->
+            </div>
+            
+            <!-- Live Math Visualizer Box -->
+            <div class="tool-section math-visualizer-card" style="margin-top: 1.5rem; background: rgba(0, 0, 0, 0.4); border-color: rgba(0, 240, 255, 0.15);">
+              <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                <span>Live Math Visualizer</span>
+                <span style="font-size: 0.75rem; font-weight: normal; color: var(--secondary);">Pixel Log Terminal</span>
+              </h3>
+              <div id="visualizer-log" style="height: 180px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; background: #050811; color: var(--primary); padding: 12px; border-radius: 6px; font-size: 0.8rem; border: 1px solid rgba(0, 240, 255, 0.1); line-height: 1.5; scrollbar-width: thin; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
+                [Sistem] Menunggu interaksi... Pilih algoritma manual di kanan, lalu gambar/klik pada canvas!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3D -->
+        <div id="section3d" class="section" style="display: none">
+          <div class="section-layout">
+            <div class="canvas-wrapper">
+              <div id="loading3d" class="loading-overlay">
+                <svg
+                  class="loading-icon"
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                >
+                  <use href="#loading-icon"></use>
+                </svg>
+                <p>Loading 3D Scene...</p>
+              </div>
+              <canvas id="canvas3d" width="1200" height="600"></canvas>
+              <!-- Removed canvas controls -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section kanan: kontrol -->
+      <section class="right-section">
+        <div class="tools-card">
+          <h2>Tools</h2>
+
+          <!-- Kontrol 2D -->
+          <div id="controls2d" class="controls-wrapper">
+            <div class="left-content-tools">
+              <div class="tool-section">
+                <h3>Pilih Bentuk</h3>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 0.4rem;">
+                  <button onclick="setShape('X')" style="justify-content: flex-start;">Huruf X (Manual)</button>
+                  <button onclick="setShape('semicircle')" style="justify-content: flex-start;">Setengah Lingkaran</button>
+                  <button onclick="setShape('donut')" style="justify-content: flex-start;">Donut</button>
+                  <button onclick="setShape('line-dda')" style="justify-content: flex-start; border-color: rgba(0,240,255,0.3);">Garis DDA (Manual)</button>
+                  <button onclick="setShape('line-bresenham')" style="justify-content: flex-start; border-color: rgba(0,240,255,0.3);">Garis Bresenham (Manual)</button>
+                  <button onclick="setShape('bezier')" style="justify-content: flex-start; border-color: rgba(255,0,127,0.3);">Kurva Bezier (Manual)</button>
+                  <button onclick="setShape('flood-fill')" style="justify-content: flex-start; border-color: rgba(112,0,255,0.3);">Ember Cat (Flood Fill)</button>
+                </div>
+              </div>
+
+              <div class="tool-section">
+                <h3>Ukuran Bentuk</h3>
+                <div class="input-group">
+                  <label for="input1">Lebar X:</label>
+                  <input id="input1" type="number" value="100" />
+                </div>
+                <div class="input-group">
+                  <label for="input2">Tinggi X:</label>
+                  <input id="input2" type="number" value="50" />
+                </div>
+                <div class="input-group">
+                  <label for="input3">Ketebalan Garis:</label>
+                  <input id="input3" type="number" value="60" />
+                </div>
+                <button onclick="updateInput()">Terapkan Ukuran</button>
+              </div>
+
+              <div class="tool-section">
+                <h3>Warna</h3>
+                <div class="color-picker">
+                  <input
+                    type="color"
+                    id="color2d"
+                    value="#ff0000"
+                    onchange="updateActiveColor()"
+                  />
+                  <button onclick="applyColor2d()">Terapkan Warna</button>
+                </div>
+              </div>
+
+              <div class="tool-section">
+                <h3>Outline</h3>
+                <div class="outline-controls">
+                  <button id="toggleOutline" onclick="toggleOutline()">
+                    Aktifkan Outline
+                  </button>
+                  <div class="input-group">
+                    <label for="input4">Ketebalan Outline:</label>
+                    <input
+                      id="input4"
+                      type="number"
+                      value="2"
+                      onchange="applyOutlineThickness()"
+                    />
+                  </div>
+                  <div class="color-picker">
+                    <input
+                      type="color"
+                      id="outlineColor"
+                      value="#000000"
+                      onchange="applyOutlineColor()"
+                    />
+                    <button onclick="applyOutlineColor()">
+                      Terapkan Warna Outline
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="right-content-tools">
+              <div class="tool-section">
+                <h3>Kontrol Mouse</h3>
+                <div class="mouse-controls">
+                  <button
+                    id="translateMode"
+                    onclick="setMouseMode('translate')"
+                  >
+                    <svg class="icon">
+                      <use href="#move-icon"></use>
+                    </svg>
+                    Mode Translasi
+                  </button>
+                  <button id="rotateMode" onclick="setMouseMode('rotate')">
+                    <svg class="icon">
+                      <use href="#rotate-icon"></use>
+                    </svg>
+                    Mode Rotasi
+                  </button>
+                  <button id="scaleMode" onclick="setMouseMode('scale')">
+                    <svg class="icon">
+                      <use href="#search-icon"></use>
+                    </svg>
+                    Mode Skala
+                  </button>
+                </div>
+                <div
+                  class="mode-info"
+                  style="
+                    font-size: 0.85rem;
+                    margin-top: 0.5rem;
+                    text-align: center;
+                    color: var(--secondary);
+                  "
+                >
+                  Klik dan seret pada kanvas untuk menggunakan mode yang dipilih
+                </div>
+              </div>
+
+              <div class="tool-section">
+                <h3>Rotasi</h3>
+                <button onclick="rotate(-1)">
+                  <svg class="icon">
+                    <use href="#rotate-icon"></use>
+                  </svg>
+                  Rotasi Kiri
+                </button>
+                <button onclick="rotate(1)">
+                  <svg class="icon">
+                    <use href="#rotate-icon"></use>
+                  </svg>
+                  Rotasi Kanan
+                </button>
+              </div>
+
+              <div class="tool-section">
+                <h3>Translasi</h3>
+                <div class="direction-grid">
+                  <div class="grid-center">
+                    <button onclick="move(0, -10)">
+                      <svg class="icon">
+                        <use href="#arrow-up-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="grid-row">
+                    <button onclick="move(-10, 0)">
+                      <svg class="icon">
+                        <use href="#arrow-left-icon"></use>
+                      </svg>
+                    </button>
+                    <button onclick="move(10, 0)">
+                      <svg class="icon">
+                        <use href="#arrow-right-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="grid-center">
+                    <button onclick="move(0, 10)">
+                      <svg class="icon">
+                        <use href="#arrow-down-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tool-section">
+                <h3>Skala</h3>
+                <button onclick="changeScale(0.1)">
+                  <svg class="icon">
+                    <use href="#search-icon"></use>
+                  </svg>
+                  Perbesar
+                </button>
+                <button onclick="changeScale(-0.1)">
+                  <svg class="icon">
+                    <use href="#search-icon"></use>
+                  </svg>
+                  Perkecil
+                </button>
+              </div>
+
+              <!-- Animasi 2D Section -->
+              <div class="tool-section">
+                <h3>Animasi 2D</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; margin-bottom: 0.5rem;">
+                  <button id="btnAnimBouncing" onclick="toggleAnimation('bouncing')" style="font-size: 0.8rem; padding: 6px;">Pantul</button>
+                  <button id="btnAnimRotating" onclick="toggleAnimation('rotating')" style="font-size: 0.8rem; padding: 6px;">Putar</button>
+                  <button id="btnAnimPulsing" onclick="toggleAnimation('pulsing')" style="font-size: 0.8rem; padding: 6px;">Denyut</button>
+                </div>
+                <button id="btnPlayAnim" onclick="togglePlayAnimation()" style="width: 100%; background: var(--primary); font-weight: 800;">
+                  Mulai Animasi
+                </button>
+              </div>
+
+              <!-- Efek Suara & Multimedia Section -->
+              <div class="tool-section">
+                <h3>Audio & Multimedia</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; border: 1px solid var(--border);">
+                  <span style="font-size: 0.85rem; color: var(--secondary);">Suara Synthesizer:</span>
+                  <div style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                    <input type="checkbox" id="audioToggle" onchange="toggleAudio()" style="opacity: 0; width: 100%; height: 100%; cursor: pointer; position: absolute; z-index: 2;" />
+                    <span id="audioSlider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px;"></span>
+                  </div>
+                </div>
+                <div class="input-group">
+                   <label for="textInput">Tambah Teks ke Kanvas:</label>
+                   <div style="display: flex; gap: 5px;">
+                     <input id="textInput" type="text" placeholder="Ketik teks..." style="flex: 1; padding: 8px; border: 2px solid #000000; border-radius: 0px; background: #ffffff; color: #000000; font-weight: bold; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.15);" />
+                     <button onclick="addTextToCanvas()" style="padding: 6px 12px; margin: 0;">Tambah</button>
+                   </div>
+                 </div>
+                 <div class="input-group">
+                   <label>Unggah Gambar Objek:</label>
+                   <input type="file" id="imageLoader" accept="image/*" onchange="loadImageToCanvas(event)" style="width: 100%; padding: 4px; font-size: 0.8rem; color: #000000; background: transparent; border: none; font-weight: bold;" />
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kontrol 3D -->
+          <div id="controls3d" class="controls-wrapper hidden">
+            <div class="left-content-tools">
+              <div class="tool-section">
+                <h3>Pilih Objek</h3>
+                <button onclick="createObject('cube')">Balok</button>
+                <button onclick="createObject('tabung')">Tabung</button>
+                <button onclick="createObject('limas')">Limas</button>
+              </div>
+
+              <div class="tool-section">
+                <h3>Kontrol Mouse</h3>
+                <!-- The buttons will be dynamically added by JavaScript -->
+              </div>
+
+              <div class="tool-section">
+                <h3>Ukuran Objek</h3>
+                <div class="input-group">
+                  <label>Lebar/Diameter:</label>
+                  <input id="inputWidth" type="number" value="1" step="0.1" />
+                </div>
+                <div class="input-group">
+                  <label>Tinggi:</label>
+                  <input id="inputHeight" type="number" value="2" step="0.1" />
+                </div>
+                <button onclick="updateSize()">Terapkan Ukuran</button>
+              </div>
+
+              <div class="tool-section">
+                <h3>Warna Objek</h3>
+                <div class="color-picker">
+                  <input
+                    type="color"
+                    id="color3d"
+                    value="#00ff00"
+                    onchange="applyColor3d()"
+                  />
+                  <button onclick="applyColor3d()">Terapkan Warna</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="right-content-tools">
+              <div class="tool-section">
+                <h3>Rotasi</h3>
+                <div class="direction-grid">
+                  <div class="grid-center">
+                    <button onclick="rotate3d('up')">
+                      <svg class="icon">
+                        <use href="#arrow-up-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="grid-row">
+                    <button onclick="rotate3d('left')">
+                      <svg class="icon">
+                        <use href="#arrow-left-icon"></use>
+                      </svg>
+                    </button>
+                    <button onclick="rotate3d('right')">
+                      <svg class="icon">
+                        <use href="#arrow-right-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="grid-center">
+                    <button onclick="rotate3d('down')">
+                      <svg class="icon">
+                        <use href="#arrow-down-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tool-section">
+                <h3>Translasi</h3>
+                <div class="direction-grid">
+                  <div class="grid-center">
+                    <button onclick="translate3d('up')">
+                      <svg class="icon">
+                        <use href="#arrow-up-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="grid-row">
+                    <button onclick="translate3d('left')">
+                      <svg class="icon">
+                        <use href="#arrow-left-icon"></use>
+                      </svg>
+                    </button>
+                    <button onclick="translate3d('right')">
+                      <svg class="icon">
+                        <use href="#arrow-right-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="grid-center">
+                    <button onclick="translate3d('down')">
+                      <svg class="icon">
+                        <use href="#arrow-down-icon"></use>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tool-section">
+                <h3>Skala</h3>
+                <button onclick="scale3d(0.1)">
+                  <svg class="icon">
+                    <use href="#search-icon"></use>
+                  </svg>
+                  Perbesar
+                </button>
+                <button onclick="scale3d(-0.1)">
+                  <svg class="icon">
+                    <use href="#search-icon"></use>
+                  </svg>
+                  Perkecil
+                </button>
+              </div>
+
+              <!-- Tutorial Keyboard Controls for 3D -->
+              <div class="tool-section">
+                <h3>Keyboard Shortcuts</h3>
+                <div
+                  class="keyboard-tutorial"
+                  style="font-size: 0.9rem; color: var(--text-color)"
+                >
+                  <div
+                    style="
+                      margin-bottom: 8px;
+                      border-bottom: 1px solid #eee;
+                      padding-bottom: 8px;
+                    "
+                  >
+                    <strong>Translasi:</strong>
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 5px;
+                        margin-top: 4px;
+                      "
+                    >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >↑</kbd
+                      >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >↓</kbd
+                      >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >←</kbd
+                      >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >→</kbd
+                      >
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      margin-bottom: 8px;
+                      border-bottom: 1px solid #eee;
+                      padding-bottom: 8px;
+                    "
+                  >
+                    <strong>Rotasi:</strong>
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 5px;
+                        margin-top: 4px;
+                      "
+                    >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >Ctrl</kbd
+                      >
+                      +
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >Shift</kbd
+                      >
+                      +
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >↑</kbd
+                      >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >↓</kbd
+                      >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >←</kbd
+                      >
+                      <kbd
+                        style="
+                          background: #f0f0f0;
+                          border: 1px solid #ccc;
+                          border-radius: 3px;
+                          padding: 2px 5px;
+                          font-size: 0.8rem;
+                        "
+                        >→</kbd
+                      >
+                    </div>
+                  </div>
+
+                  <div
+                    style="
+                      margin-bottom: 8px;
+                      border-bottom: 1px solid #eee;
+                      padding-bottom: 8px;
+                    "
+                  >
+                    <strong>Skala:</strong>
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 5px;
+                        margin-top: 4px;
+                      "
+                    >
+                      <span
+                        >Perbesar:
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >Ctrl</kbd
+                        >
+                        +
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >Shift</kbd
+                        >
+                        +
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >+</kbd
+                        ></span
+                      >
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 5px;
+                        margin-top: 4px;
+                      "
+                    >
+                      <span
+                        >Perkecil:
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >Ctrl</kbd
+                        >
+                        +
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >Shift</kbd
+                        >
+                        +
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >-</kbd
+                        ></span
+                      >
+                    </div>
+                  </div>
+
+                  <div>
+                    <strong>Mouse + Keyboard:</strong>
+                    <div
+                      style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 5px;
+                        margin-top: 4px;
+                      "
+                    >
+                      <span
+                        >Zoom:
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >Ctrl</kbd
+                        >
+                        +
+                        <kbd
+                          style="
+                            background: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 3px;
+                            padding: 2px 5px;
+                            font-size: 0.8rem;
+                          "
+                          >Mouse Wheel</kbd
+                        ></span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Script inisialisasi -->
+    <script>
+      const btn2D = document.getElementById("btn2D");
+      const btn3D = document.getElementById("btn3D");
+      const controls2d = document.getElementById("controls2d");
+      const controls3d = document.getElementById("controls3d");
+      const resetBtn2D = document.getElementById("resetBtn2D");
+      const resetBtn3D = document.getElementById("resetBtn3D");
+      const clearBtn2D = document.getElementById("clearBtn2D");
+      const clearBtn3D = document.getElementById("clearBtn3D");
+
+      function showSection(id) {
+        document.getElementById("section2d").style.display = "none";
+        document.getElementById("section3d").style.display = "none";
+        document.getElementById(id).style.display = "block";
+      }
+
+      function switchTo2D() {
+        showSection("section2d");
+        controls2d.classList.remove("hidden");
+        controls3d.classList.add("hidden");
+        btn2D.classList.add("active");
+        btn3D.classList.remove("active");
+
+        resetBtn2D.style.display = "inline-block";
+        resetBtn3D.style.display = "none";
+        clearBtn2D.style.display = "inline-block";
+        clearBtn3D.style.display = "none";
+      }
+
+      function switchTo3D() {
+        showSection("section3d");
+        controls2d.classList.add("hidden");
+        controls3d.classList.remove("hidden");
+        btn3D.classList.add("active");
+        btn2D.classList.remove("active");
+
+        resetBtn2D.style.display = "none";
+        resetBtn3D.style.display = "inline-block";
+        clearBtn2D.style.display = "none";
+        clearBtn3D.style.display = "inline-block";
+
+        // Inisialisasi scene 3D saat tab diklik agar tidak bergantung pada window load event yang bisa terhambat
+        if (typeof window.init === "function") {
+          window.init();
+        }
+      }
+
+      btn2D.addEventListener("click", switchTo2D);
+      btn3D.addEventListener("click", switchTo3D);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        switchTo2D();
+      });
+    </script>
+
+    <!-- Script fungsional 2D & 3D -->
+    <script src="script2d.js"></script>
+    <script src="script3d.js"></script>
+    <script>
+      // Pastikan Three.js sudah di-load sebelum menjalankan script3d.js
+      window.addEventListener("DOMContentLoaded", function () {
+        // Menunggu sedikit agar Three.js bisa di-load dengan baik
+        setTimeout(() => {
+          console.log("Loading 3D module...");
+
+          // Verifikasi loading Three.js
+          if (typeof THREE !== "undefined") {
+            console.log("Three.js berhasil dimuat");
+          } else {
+            console.error("Three.js library tidak berhasil dimuat");
+
+            // Tampilkan pesan error jika Three.js gagal dimuat
+            const loadingElement = document.getElementById("loading3d");
+            if (loadingElement) {
+              loadingElement.innerHTML = `
+                <svg class="icon" style="color: #ff0000; width: 40px; height: 40px;">
+                  <use href="#error-icon"></use>
+                </svg>
+                <p>Error: Three.js tidak dapat dimuat. Refresh halaman atau periksa koneksi internet.</p>
+              `;
+            }
+          }
+        }, 500);
+      });
+    </script>
+  </body>
+</html>

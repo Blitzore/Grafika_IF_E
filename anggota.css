@@ -1,0 +1,54 @@
+.main-layout {
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.card-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.member-card {
+    background-color: #ffffff;
+    border-radius: 0px;
+    border: var(--thick-border);
+    box-shadow: var(--neo-shadow);
+    width: 250px;
+    text-align: center;
+    overflow: hidden;
+    transition: all 0.15s ease;
+}
+
+.member-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--neo-shadow-hover);
+}
+
+.member-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-bottom: var(--thick-border);
+}
+
+.member-info {
+    padding: 16px;
+}
+
+.member-info h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.member-info p {
+    margin: 0;
+    font-weight: 700;
+    color: #374151;
+}
+
+
+

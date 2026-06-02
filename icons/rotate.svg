@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M15.5 14L14.5 15L12 12.5V9H13V12L15.5 14Z" fill="currentColor"/>
+  <path d="M10 3H14V5H10V3Z" fill="currentColor"/>
+  <path d="M10 19H14V21H10V19Z" fill="currentColor"/>
+  <path d="M5 10H3V14H5V10Z" fill="currentColor"/>
+  <path d="M21 10H19V14H21V10Z" fill="currentColor"/>
+  <path d="M17.0711 6.34311L18.4853 4.92889L17.0711 3.51468L15.6569 4.92889L17.0711 6.34311Z" fill="currentColor"/>
+  <path d="M8.34315 17.0711L6.92893 18.4853L5.51472 17.0711L6.92893 15.6569L8.34315 17.0711Z" fill="currentColor"/>
+  <path d="M17.0711 20.4853L18.4853 19.0711L17.0711 17.6569L15.6569 19.0711L17.0711 20.4853Z" fill="currentColor"/>
+  <path d="M8.34315 6.92892L6.92893 5.51471L5.51472 6.92892L6.92893 8.34314L8.34315 6.92892Z" fill="currentColor"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8ZM6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12Z" fill="currentColor"/>
+</svg>
